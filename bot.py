@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from aiogram.filters import Command
 
-TOKEN = "тут будет токен"
+TOKEN = "5198093605"
 ADMIN_ID = 5198093605
 
 bot = Bot(token=TOKEN)
