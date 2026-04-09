@@ -1,12 +1,9 @@
 import asyncio
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from aiogram.filters import Command
 
-# 🔑 ВСТАВЬ СЮДА ТОКЕН ИЗ BotFather
-TOKEN = "8670366173:AAGi2YWANKzKOplC8iislU7x7gTN1i4ph5s"
-
-# 🧑‍💻 ВСТАВЬ СЮДА СВОЙ TELEGRAM ID
+TOKEN = "тут будет токен"
 ADMIN_ID = 5198093605
 
 bot = Bot(token=TOKEN)
@@ -14,51 +11,75 @@ dp = Dispatcher()
 
 user_data = {}
 
-# 📌 Кнопки выбора услуги
-service_kb = ReplyKeyboardMarkup(
+# 📌 КАТЕГОРИИ
+category_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="SMM"), KeyboardButton(text="Видеосъемка")],
-        [KeyboardButton(text="Монтаж"), KeyboardButton(text="Реклама")],
-        [KeyboardButton(text="Другое")]
+        [KeyboardButton(text="📱 Продакшн"), KeyboardButton(text="🎬 Съемка")],
+        [KeyboardButton(text="🎨 Дизайн"), KeyboardButton(text="🎓 Обучение")],
+        [KeyboardButton(text="💬 Консультация")]
     ],
     resize_keyboard=True
 )
 
-# 💰 Кнопки бюджета
-budget_kb = ReplyKeyboardMarkup(
+# 📌 ПРОДАКШН
+production_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="до 100$")],
-        [KeyboardButton(text="100–300$")],
-        [KeyboardButton(text="300–1000$")],
-        [KeyboardButton(text="1000$+")]
+        [KeyboardButton(text="SMM"), KeyboardButton(text="Упаковка профиля")],
+        [KeyboardButton(text="Написание сценариев")]
     ],
     resize_keyboard=True
 )
 
-# ⏳ Кнопки сроков
-deadline_kb = ReplyKeyboardMarkup(
+# 📌 СЪЕМКА
+shoot_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Срочно")],
-        [KeyboardButton(text="До недели")],
-        [KeyboardButton(text="До месяца")],
-        [KeyboardButton(text="Просто узнать")]
+        [KeyboardButton(text="Видеосъемка"), KeyboardButton(text="Фотосессия")],
+        [KeyboardButton(text="Съемка на дрон"), KeyboardButton(text="Репортажная съемка")]
     ],
     resize_keyboard=True
 )
 
-# 🚀 Старт
+# 📌 ДИЗАЙН
+design_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Digital дизайн"), KeyboardButton(text="Print дизайн")]
+    ],
+    resize_keyboard=True
+)
+
+# 📌 ОБУЧЕНИЕ
+education_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Обучение монтажу"), KeyboardButton(text="Обучение съемке")],
+        [KeyboardButton(text="Обучение сценариям"), KeyboardButton(text="Поведение в кадре")]
+    ],
+    resize_keyboard=True
+)
+
+# 📌 КОНСУЛЬТАЦИЯ
+consult_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Бесплатная консультация")],
+        [KeyboardButton(text="Платная консультация (до 2 часов)")]
+    ],
+    resize_keyboard=True
+)
+
+# 🚀 СТАРТ
 @dp.message(Command("start"))
 async def start(message: types.Message):
+
     await message.answer(
         "Добро пожаловать в чат-бот *909.Production*\n\n"
         "*[ Мы создаём, вы побеждаете — продакшн с результатом. ]*\n\n"
         "Этот бот создан, чтобы мы быстро поняли вашу задачу, бюджет и сроки — без лишней переписки.\n\n"
         "Ответьте на несколько вопросов, и мы предложим оптимальное решение под ваш запрос 🚀",
-        reply_markup=service_kb,
         parse_mode="Markdown"
     )
 
-# 🧠 Основная логика
+    await message.answer("👇 Выбери категорию:", reply_markup=category_kb)
+
+# 🧠 ЛОГИКА
 @dp.message()
 async def handle(message: types.Message):
     user_id = message.from_user.id
@@ -68,31 +89,104 @@ async def handle(message: types.Message):
 
     data = user_data[user_id]
 
-    # 1. Услуга
+    # 📂 категории
+    if message.text == "📱 Продакшн":
+        await message.answer("Выбери услугу 👇", reply_markup=production_kb)
+        return
+
+    if message.text == "🎬 Съемка":
+        await message.answer("Выбери услугу 👇", reply_markup=shoot_kb)
+        return
+
+    if message.text == "🎨 Дизайн":
+        await message.answer("Выбери услугу 👇", reply_markup=design_kb)
+        return
+
+    if message.text == "🎓 Обучение":
+        await message.answer("Выбери услугу 👇", reply_markup=education_kb)
+        return
+
+    if message.text == "💬 Консультация":
+        await message.answer(
+            "Выбери формат консультации 👇\n\n"
+            "🔹 Бесплатная — быстрый разбор\n"
+            "🔹 Платная (до 2 часов) — глубокая проработка стратегии",
+            reply_markup=consult_kb
+        )
+        return
+
+    # 📌 консультации
+    if message.text == "Бесплатная консультация":
+        data["service"] = "Бесплатная консультация"
+        await message.answer("Опиши свою задачу 👇", reply_markup=ReplyKeyboardRemove())
+        return
+
+    if message.text == "Платная консультация (до 2 часов)":
+        data["service"] = "Платная консультация (до 2 часов)"
+        await message.answer(
+            "Отлично 👌\n\n"
+            "Опиши задачу — мы подготовим стратегию и разберем её на созвоне",
+            reply_markup=ReplyKeyboardRemove()
+        )
+        return
+
+    # 📌 услуга
     if "service" not in data:
         data["service"] = message.text
-        await message.answer("Опиши задачу 👇")
+        await message.answer(
+            "Отлично 👌\n\n"
+            "Опиши задачу максимально подробно:\n"
+            "— что нужно сделать\n"
+            "— для какого проекта\n"
+            "— какой результат хочешь получить",
+            reply_markup=ReplyKeyboardRemove()
+        )
         return
 
-    # 2. Задача
+    # 📌 задача
     if "task" not in data:
         data["task"] = message.text
-        await message.answer("Выбери бюджет:", reply_markup=budget_kb)
+        await message.answer(
+            "💰 Чтобы предложить лучшее решение — выбери бюджет:",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="до 100$")],
+                    [KeyboardButton(text="100–300$")],
+                    [KeyboardButton(text="300–1000$")],
+                    [KeyboardButton(text="1000$+")]
+                ],
+                resize_keyboard=True
+            )
+        )
         return
 
-    # 3. Бюджет
+    # 📌 бюджет
     if "budget" not in data:
         data["budget"] = message.text
-        await message.answer("Сроки:", reply_markup=deadline_kb)
+        await message.answer(
+            "⏳ Когда планируешь запуск?",
+            reply_markup=ReplyKeyboardMarkup(
+                keyboard=[
+                    [KeyboardButton(text="Срочно")],
+                    [KeyboardButton(text="До недели")],
+                    [KeyboardButton(text="До месяца")],
+                    [KeyboardButton(text="Просто узнать")]
+                ],
+                resize_keyboard=True
+            )
+        )
         return
 
-    # 4. Сроки
+    # 📌 сроки
     if "deadline" not in data:
         data["deadline"] = message.text
-        await message.answer("Оставь свой контакт (Telegram / WhatsApp)")
+        await message.answer(
+            "📩 Оставь удобный контакт (Telegram / WhatsApp)",
+            reply_markup=ReplyKeyboardRemove()
+        )
         return
 
-    # 5. Контакт и отправка заявки
+    # 📌 контакт
     if "contact" not in data:
         data["contact"] = message.text
 
@@ -105,15 +199,22 @@ async def handle(message: types.Message):
             f"Контакт: {data['contact']}"
         )
 
-        # 📩 отправка тебе
         await bot.send_message(ADMIN_ID, text)
 
-        await message.answer("🔥 Заявка принята! Ответим в течение 1–3 часов.")
+        await message.answer(
+            "🔥 Заявка принята\n\n"
+            "Мы уже анализируем твой запрос.\n"
+            "Свяжемся с тобой в течение 1–3 часов."
+        )
 
-        # 🔄 очищаем данные
+        await message.answer(
+            "📌 Пока мы готовим решение — посмотри наши работы:\n"
+            "👉 https://instagram.com/909.production_am"
+        )
+
         user_data[user_id] = {}
 
-# ▶️ Запуск бота
+# ▶️ запуск
 async def main():
     await dp.start_polling(bot)
 
