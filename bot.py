@@ -151,6 +151,11 @@ async def handle(message: types.Message):
 
     data = user_data[user_id]
 
+    # 🔥 ЕСЛИ ЗАЯВКА УЖЕ ЗАВЕРШЕНА
+    if data.get("done"):
+        await message.answer("❤️ Мы Вам ответим в течение 1–3 часов. Спасибо за ожидание!")
+        return
+
     if "task" not in data:
         data["task"] = message.text
         await message.answer(
@@ -208,7 +213,11 @@ async def handle(message: types.Message):
             "Это сильно ускорит и усилит результат 🚀"
         )
 
-        user_data[user_id] = {}
+        # 🔥 ВОТ ГЛАВНОЕ ДОБАВЛЕНИЕ
+        await message.answer("❤️ Мы Вам ответим в течение 1–3 часов. Спасибо за ожидание!")
+
+        user_data[user_id]["done"] = True
+        return
 
 # ▶️ запуск
 async def main():
