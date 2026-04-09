@@ -50,10 +50,12 @@ deadline_kb = ReplyKeyboardMarkup(
 @dp.message(Command("start"))
 async def start(message: types.Message):
     await message.answer(
-        "🔥 Добро пожаловать в Kingdawe Production\n\n"
-        "Контент, который привлекает и продаёт.\n\n"
-        "Выбери услугу:",
-        reply_markup=service_kb
+        "Добро пожаловать в чат-бот *909.Production*\n\n"
+        "*[ Мы создаём, вы побеждаете — продакшн с результатом. ]*\n\n"
+        "Этот бот создан, чтобы мы быстро поняли вашу задачу, бюджет и сроки — без лишней переписки.\n\n"
+        "Ответьте на несколько вопросов, и мы предложим оптимальное решение под ваш запрос 🚀",
+        reply_markup=service_kb,
+        parse_mode="Markdown"
     )
 
 # 🧠 Основная логика
