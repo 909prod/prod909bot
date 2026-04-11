@@ -58,13 +58,11 @@ async def callbacks(callback: types.CallbackQuery):
 
     data = user_data[user_id]
 
-    # 🏠 главное меню
     if callback.data == "back_main":
         user_data[user_id] = {}
         await callback.message.edit_text("👇 Выбери направление:", reply_markup=main_menu())
         return
 
-    # 📂 категории
     if callback.data == "prod":
         data["service"] = "Продакшен"
         await callback.message.edit_text(
@@ -151,9 +149,16 @@ async def handle(message: types.Message):
 
     data = user_data[user_id]
 
-    # 🔥 ЕСЛИ ЗАЯВКА УЖЕ ЗАВЕРШЕНА
+    # ✅ если уже завершено
     if data.get("done"):
         await message.answer("❤️ Мы Вам ответим в течение 1–3 часов. Спасибо за ожидание!")
+        return
+
+    # ✅ если ждём сообщение после заявки
+    if data.get("wait_refs"):
+        await message.answer("❤️ Мы Вам ответим в течение 1–3 часов. Спасибо за ожидание!")
+        user_data[user_id]["done"] = True
+        user_data[user_id].pop("wait_refs", None)
         return
 
     if "task" not in data:
@@ -175,6 +180,17 @@ async def handle(message: types.Message):
     if "deadline" not in data:
         data["deadline"] = message.text
         await message.answer(
+            "📎 Отправь 1–2 референса одним сообщением 👇\n\n"
+            "Это могут быть:\n"
+            "— ссылки\n"
+            "— скриншоты\n"
+            "— видео"
+        )
+        return
+
+    if "references" not in data:
+        data["references"] = message.text
+        await message.answer(
             "📩 Оставь контакт (Telegram / WhatsApp)\n\n"
             "Мы свяжемся и предложим решение под твой запрос"
         )
@@ -189,7 +205,8 @@ async def handle(message: types.Message):
             f"Задача: {data['task']}\n"
             f"Бюджет: {data['budget']}\n"
             f"Сроки: {data['deadline']}\n"
-            f"Контакт: {data['contact']}"
+            f"Контакт: {data['contact']}\n"
+            f"Референсы: {data.get('references','-')}"
         )
 
         await bot.send_message(ADMIN_ID, text)
@@ -206,17 +223,8 @@ async def handle(message: types.Message):
             "Это даст тебе понимание уровня и подхода 🚀"
         )
 
-        await asyncio.sleep(10)
-        await message.answer(
-            "Кстати 👇\n\n"
-            "Если у тебя есть примеры / референсы — подготовь их.\n"
-            "Это сильно ускорит и усилит результат 🚀"
-        )
-
-        # 🔥 ВОТ ГЛАВНОЕ ДОБАВЛЕНИЕ
-        await message.answer("❤️ Мы Вам ответим в течение 1–3 часов. Спасибо за ожидание!")
-
-        user_data[user_id]["done"] = True
+        # 👉 ждём сообщение пользователя
+        user_data[user_id]["wait_refs"] = True
         return
 
 # ▶️ запуск
